@@ -14,7 +14,7 @@ local NEETS_Update = {}
     NEETS_Update.CallbackNoUpdate = function(NewVersion) NEETSeries_Print("You are using Lastest Version ("..NewVersion..")") NEETSeries_Hello() end
     NEETS_Update.CallbackNewVersion = function(NewVersion) NEETSeries_Print("New Version found ("..NewVersion.."). Please wait...") end
     NEETS_Update.CallbackError = function() NEETSeries_Print("Error when checking update. Please try again.") end
-    Callback.Add("AfterLoad", function() AutoUpdater(NEETS_Update.ScriptVersion, NEETS_Update.UseHttps, NEETS_Update.Host, NEETS_Update.VersionPath, NEETS_Update.ScriptPath, NEETS_Update.SavePath, NEETS_Update.CallbackUpdate, NEETS_Update.CallbackNoUpdate, NEETS_Update.CallbackNewVersion, NEETS_Update.CallbackError) end)
+    Callback.Add("Load", function() AutoUpdater(NEETS_Update.ScriptVersion, NEETS_Update.UseHttps, NEETS_Update.Host, NEETS_Update.VersionPath, NEETS_Update.ScriptPath, NEETS_Update.SavePath, NEETS_Update.CallbackUpdate, NEETS_Update.CallbackNoUpdate, NEETS_Update.CallbackNewVersion, NEETS_Update.CallbackError) end)
 --[[ -------------------------------------------------- ]]--
 
 class "NS_Xerath"
@@ -180,14 +180,12 @@ function NS_Xerath:UpdateValues()
       if self.Q.Range2 ~= self.Q.minRange then self.Q.Range2 = self.Q.minRange end
      else
       self.Q.Range = math.min(self.Q.minRange + (os.clock() - self.Q.LastCastTime)*500, self.Q.maxRange)
-      self.Q.Range2 = math.min(self.Q.minRange-20 + (os.clock() - self.Q.LastCastTime)*500, self.Q.maxRange)
+      self.Q.Range2 = math.min(self.Q.minRange-15 + (os.clock() - self.Q.LastCastTime)*500, self.Q.maxRange)
      end
     end
     if IsReady(_R) then
      if self.R.Activating == false then
       self:CheckRUsing()
-      IOW.movementEnabled = true
-      IOW.attacksEnabled = true
 	 else
       self:CheckRCasting()
       if EnemiesAround(myHero.pos, 1500) == 0 then
@@ -509,5 +507,5 @@ end
 if myHero.charName == "Xerath" then
     NS_Xerath()
 else
-    PrintChat(string.format("<font color=\"#4169E1\"><b>[NEET Series]:</b></font><font color=\"#FFFFFF\"> Not Supported For %s</font>",myHero.charName))
+    NEETSeries_Print("Not Supported For "..myHero.charName)
 return end
