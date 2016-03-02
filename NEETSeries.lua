@@ -270,7 +270,7 @@ function NS_Xerath:Fight(myHero)
     if self.R.Activating then return end
     QTarget, WTarget, ETarget = QT:GetTarget(), WT:GetTarget(), ET:GetTarget()
     self.R.Count = 3
-    if NEETSeries_Mode("Combo") then
+    if NEETSeries_Mode() == "Combo" then
      if self.cfg.misc.castCombo.WE:Value() then
       if IsReady(_W) or IsReady(_E) then
        if IsReady(_E) and self.cfg.cb.E:Value() and ETarget then self:CastE(ETarget) end
@@ -283,12 +283,12 @@ function NS_Xerath:Fight(myHero)
        if IsReady(_Q) and self.cfg.cb.Q:Value() and QTarget then self:CastQ(QTarget) end
      end
 
-    elseif NEETSeries_Mode("Harass") and self.cfg.hr.Enable:Value() <= GetPercentMP(myHero) then
+    elseif NEETSeries_Mode() == "Harass" and self.cfg.hr.Enable:Value() <= GetPercentMP(myHero) then
        if IsReady(_E) and self.cfg.hr.E:Value() and ETarget then self:CastE(ETarget) end
        if IsReady(_W) and self.cfg.hr.W:Value() and WTarget then self:CastW(WTarget) end
        if IsReady(_Q) and self.cfg.hr.Q:Value() and QTarget then self:CastQ(QTarget) end
 
-    elseif NEETSeries_Mode("LaneClear") then
+    elseif NEETSeries_Mode() == "LaneClear" then
      if self.cfg.lc.Enable:Value() <= GetPercentMP(myHero) then self:LaneClear() end
 	 self:JungleClear()
     end
@@ -413,15 +413,15 @@ function NS_Xerath:QPrediction(unit)
     if dash == true and pos ~= nil and GetDistance(pos) <= self.Q.maxRange then
       hitChance, Position, PredictName = 1, pos, "Dashing"
     else
-     if NEETSeries.predict:Value() == 1 then
+     if NEETS_Predict == "OpenPredict" then
       self.Q.Predict = GetLinearAOEPrediction(unit, { delay = self.Q.Delay, speed = self.Q.Speed, width = self.Q.Width, range = self.Q.maxRange })
       hitChance, Position, PredictName = self.Q.Predict.hitChance, self.Q.Predict.castPos, "OpenPredict"
-     elseif NEETSeries.predict:Value() == 2 then
+     elseif NEETS_Predict == "IPrediction" then
       self.Q.Predict = self.Q.IPrediction
       hitChance, Position = self.Q.Predict:Predict(unit)
       PredictName = "IPrediction"
-     elseif NEETSeries.predict:Value() == 3 then
-      self.Q.Predict = GetPredictionForPlayer(myHero.pos, unit, unit.ms, self.Q.Speed, self.Q.Delay*100, self.Q.maxRange, self.Q.Width, false, true)
+     elseif NEETS_Predict == "GoSPrediction" then
+      self.Q.Predict = GetPredictionForPlayer(myHero.pos, unit, unit.ms, self.Q.Speed, self.Q.Delay*1000, self.Q.maxRange, self.Q.Width, false, true)
       hitChance, Position, PredictName = self.Q.Predict.HitChance, self.Q.Predict.PredPos, "GoSPrediction"
      end
     end
@@ -434,15 +434,15 @@ function NS_Xerath:WPrediction(unit)
     if dash == true and pos ~= nil and GetDistance(pos) <= self.W.Range then
      hitChance, Position, PredictName = 1, pos, "Dashing"
     else
-     if NEETSeries.predict:Value() == 1 then
+     if NEETS_Predict == "OpenPredict" then
       self.W.Predict = GetCircularAOEPrediction(unit, { delay = self.W.Delay, speed = self.W.Speed, radius = self.W.Width/2, range = self.W.Range })
       hitChance, Position, PredictName = self.W.Predict.hitChance, self.W.Predict.castPos, "OpenPredict"
-     elseif NEETSeries.predict:Value() == 2 then
+     elseif NEETS_Predict == "IPrediction" then
       self.W.Predict = self.W.IPrediction
       hitChance, Position = self.W.Predict:Predict(unit)
       PredictName = "IPrediction"
-     elseif NEETSeries.predict:Value() == 3 then
-      self.W.Predict = GetPredictionForPlayer(myHero.pos, unit, unit.ms, self.W.Speed, self.W.Delay*100, self.W.Range, self.W.Width, false, true)
+     elseif NEETS_Predict == "GoSPrediction" then
+      self.W.Predict = GetPredictionForPlayer(myHero.pos, unit, unit.ms, self.W.Speed, self.W.Delay*1000, self.W.Range, self.W.Width, false, true)
       hitChance, Position, PredictName = self.W.Predict.HitChance, self.W.Predict.PredPos, "GoSPrediction"
      end
     end
@@ -455,19 +455,19 @@ function NS_Xerath:EPrediction(unit)
     if dash == true and pos ~= nil and GetDistance(pos) <= self.E.Range then
       hitChance, Position, CanCast, PredictName = 1, pos, true, "Dashing"
     else
-     if NEETSeries.predict:Value() == 1 then
+     if NEETS_Predict == "OpenPredict" then
       self.E.Predict = GetPrediction(unit, { delay = self.E.Delay, speed = self.E.Speed, width = self.E.Width, range = self.E.Range })
       if not self.E.Predict:mCollision(1) then
       hitChance, Position, CanCast, PredictName = self.E.Predict.hitChance, self.E.Predict.castPos, true, "OpenPredict"
       else
       hitChance, Position, CanCast, PredictName = self.E.Predict.hitChance, self.E.Predict.castPos, false, "OpenPredict"
       end
-     elseif NEETSeries.predict:Value() == 2 then
+     elseif NEETS_Predict == "IPrediction" then
       self.E.Predict = self.E.IPrediction
       hitChance, Position = self.E.Predict:Predict(unit)
       CanCast, PredictName =  true, "IPrediction"
-     elseif NEETSeries.predict:Value() == 3 then
-      self.E.Predict = GetPredictionForPlayer(myHero.pos, unit, unit.ms, self.E.Speed, self.E.Delay*100, self.E.Range, self.E.Width, true, false)
+     elseif NEETS_Predict == "GoSPrediction" then
+      self.E.Predict = GetPredictionForPlayer(myHero.pos, unit, unit.ms, self.E.Speed, self.E.Delay*1000, self.E.Range, self.E.Width, true, false)
       hitChance, Position, CanCast, PredictName = self.E.Predict.HitChance, self.E.Predict.PredPos, true, "GoSPrediction"
      end
     end
@@ -480,15 +480,15 @@ function NS_Xerath:RPrediction(unit)
     if dash == true and pos ~= nil and GetDistance(pos) <= self.R.Range() then
      hitChance, Position, PredictName = 1, pos, "Dashing"
     else
-     if NEETSeries.predict:Value() == 1 then
+     if NEETS_Predict == "OpenPredict" then
       self.R.Predict = GetCircularAOEPrediction(unit, { delay = self.R.Delay, speed = self.R.Speed, radius = self.R.Width/2, range = self.R.Range() })
       hitChance, Position, PredictName = self.R.Predict.hitChance, self.R.Predict.castPos, "OpenPredict"
-     elseif NEETSeries.predict:Value() == 2 then
+     elseif NEETS_Predict == "IPrediction" then
       self.R.Predict = self.R.IPrediction
       hitChance, Position = self.R.Predict:Predict(unit)
       PredictName = "IPrediction"
-     elseif NEETSeries.predict:Value() == 3 then
-      self.R.Predict = GetPredictionForPlayer(myHero.pos, unit, unit.ms, self.R.Speed, self.R.Delay*100, self.R.Range(), self.R.Width, false, true)
+     elseif NEETS_Predict == "GoSPrediction" then
+      self.R.Predict = GetPredictionForPlayer(myHero.pos, unit, unit.ms, self.R.Speed, self.R.Delay*1000, self.R.Range(), self.R.Width, false, true)
       hitChance, Position, PredictName = self.R.Predict.HitChance, self.R.Predict.PredPos, "GoSPrediction"
      end
     end
@@ -563,47 +563,39 @@ function NS_Xerath:RemoveBuff(unit, buff)
     end
 end
 
-function NEETSeries_Mode(mode)
+function NEETSeries_Mode()
     if NEETS_OW == "IOW" then
-     if mode == "Combo" then
-      return IOW:Mode() == "Combo"
-     elseif mode == "Harass" then
-      return IOW:Mode() == "Harass"
-     elseif mode == "LaneClear" then
-      return IOW:Mode() == "LaneClear"
-     elseif mode == "LastHit" then
-      return IOW:Mode() == "LastHit"
-     end
+      if IOW:Mode() == "Combo" then return "Combo"
+      elseif IOW:Mode() == "Harass" then return "Harass"
+      elseif IOW:Mode() == "LaneClear" then return "LaneClear"
+      elseif IOW:Mode() == "LastHit" then return "LastHit"
+      end
     elseif NEETS_OW == "DAC" then
-     if mode == "Combo" then
-      return DAC:Mode() == "Combo"
-     elseif mode == "Harass" then
-      return DAC:Mode() == "Harass"
-     elseif mode == "LaneClear" then
-      return DAC:Mode() == "LaneClear"
-     elseif mode == "LastHit" then
-      return DAC:Mode() == "LastHit"
-     end
+      if DAC:Mode() == "Combo" then return "Combo"
+      elseif DAC:Mode() == "Harass" then return "Harass"
+      elseif DAC:Mode() == "LaneClear" then return "LaneClear"
+      elseif DAC:Mode() == "LastHit" then return "LastHit"
+      end
     end
 end
 
 function NEETSeries_BlockOrb(boolean)
     if boolean == true then
-     if NEETS_OW == "IOW" then
-      IOW.attacksEnabled = false
-      IOW.movementEnabled = false
-     elseif NEETS_OW == "DAC" then
-      DAC:MovementEnabled(false) 
-      DAC:AttacksEnabled(false)
-     end
-    else
-     if NEETS_OW == "IOW" then
-      IOW.attacksEnabled = true
-      IOW.movementEnabled = true
-     elseif NEETS_OW == "DAC" then
-      DAC:MovementEnabled(true) 
-      DAC:AttacksEnabled(true)
-     end
+      if NEETS_OW == "IOW" then
+        IOW.attacksEnabled = false
+        IOW.movementEnabled = false
+      elseif NEETS_OW == "DAC" then
+        DAC:MovementEnabled(false) 
+        DAC:AttacksEnabled(false)
+      end
+    elseif boolean == false then
+      if NEETS_OW == "IOW" then
+        IOW.attacksEnabled = true
+        IOW.movementEnabled = true
+      elseif NEETS_OW == "DAC" then
+        DAC:MovementEnabled(true) 
+        DAC:AttacksEnabled(true)
+      end
     end
 end
 
@@ -619,7 +611,7 @@ end
 
 function NEETS_PrintPredict()
 local Prediction = NEETSeries.predict:Value() == 1 and "OpenPredict" or NEETSeries.predict:Value() == 2 and "IPrediction" or NEETSeries.predict:Value() == 3 and "GoSPrediction"
-    NEETSeries_Print("Changed Prediction to: "..Prediction)
+    NEETSeries_Print("Prediciton has been changed to: "..Prediction..". Please press F6 x2 to Reload script.")
 end
 
 if myHero.charName == "Xerath" then
