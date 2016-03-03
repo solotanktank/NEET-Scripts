@@ -1,10 +1,10 @@
---[[ NEET Series Version 0.02 ]]--
+--[[ NEET Series Version 0.03 ]]--
 require('Inspired')
 require('IPrediction')
 require('OpenPredict')
 
 local NEETS_Update, NEETS_Predict, NEETS_OW = {}, "", ""
-    NEETS_Update.ScriptVersion = 0.02
+    NEETS_Update.ScriptVersion = 0.03
     NEETS_Update.UseHttps = true
     NEETS_Update.Host = "raw.githubusercontent.com"
     NEETS_Update.VersionPath = "/VTNEETS/NEET-Scripts/master/NEETSeries.version"
@@ -36,6 +36,8 @@ local NEETSeries = MenuConfig("NEETS", "NEETSeries Version: "..NEETS_Update.Scri
     NEETS_OW = "IOW"
    elseif _G.mc_cfg_orb.orb:Value() == 2 then
     NEETS_OW = "DAC"
+   elseif _G.PW_Loaded == true or _G.PW_Init == true then
+    NEETS_OW = "PW"
    end
 
 --[[ -------------------------------------------------- ]]--
@@ -44,7 +46,7 @@ class "NS_Xerath"
 function NS_Xerath:__init()
  self:LoadValues()
  self:CreateMenu()
- Callback.Add("Tick", function(myHero) self:Fight(myHero) end)
+ Callback.Add("Tick", function(myHero) self:Tick(myHero) end)
  Callback.Add("Draw", function() self:Drawings() end)
  Callback.Add("DrawMinimap", function() self:DrawRRange() end)
  Callback.Add("ProcessSpell", function(unit, spell) self:AutoE(unit, spell) self:GetRCount(unit, spell) end)
@@ -53,19 +55,22 @@ function NS_Xerath:__init()
 end
 
 function NS_Xerath:LoadValues()
-  self.Ignite = (GetCastName(myHero, SUMMONER_1):lower():find("summonerdot") and SUMMONER_1 or (GetCastName(myHero, SUMMONER_2):lower():find("summonerdot") and SUMMONER_2 or nil))
-  self.data = function(spell) return myHero:GetSpellData(spell) end
-  self.Q = { Range = 0, minRange = 750, maxRange = 1500, Range2 = 0,           Speed = math.huge, Delay = 0.575, Width = 100, Predict = nil, Damage = function(unit) return myHero:CalcMagicDamage(unit, 40 + 40*self.data(_Q).level + 0.75*myHero.ap) end, Charging = false, LastCastTime = 0}
-  self.W = { Range = self.data(_W).range,                                      Speed = math.huge, Delay = 0.675, Width = 200, Predict = nil, Damage = function(unit) return myHero:CalcMagicDamage(unit, 30 + 30*self.data(_W).level + 0.6*myHero.ap) end}
-  self.E = { Range = self.data(_E).range,                                      Speed = 1200,      Delay = 0.3,   Width = 60,  Predict = nil, Damage = function(unit) return myHero:CalcMagicDamage(unit, 50 + 30*self.data(_E).level + 0.45*myHero.ap) end}
-  self.R = { Range = function() return 2000 + 1200*self.data(_R).level end,    Speed = math.huge, Delay = 0.675, Width = 140, Predict = nil, Damage = function(unit) return myHero:CalcMagicDamage(unit, 135 + 55*self.data(_R).level + 0.433*myHero.ap) end, Activating = false, Count = 3, Delay1 = 0, Delay2 = 0, Delay3 = 0}
-  QT = TargetSelector(self.Q.maxRange, 8, DAMAGE_MAGIC)
-  WT = TargetSelector(self.W.Range, 8, DAMAGE_MAGIC)
-  ET = TargetSelector(self.E.Range, 2, DAMAGE_MAGIC)
-  self.Q.IPrediction = IPrediction.Prediction({ name = "XerathQ", speed = self.Q.Speed, delay = self.Q.Delay, range = self.Q.maxRange, width = self.Q.Width, collision = false, aoe = true, type = "linear"})
-  self.W.IPrediction = IPrediction.Prediction({ name = "XerathW", speed = self.W.Speed, delay = self.W.Delay, range = self.W.Range, width = self.W.Width, collision = false, aoe = true, type = "circular"})
-  self.E.IPrediction = IPrediction.Prediction({ name = "XerathE", speed = self.E.Speed, delay = self.E.Delay, range = self.E.Range, width = self.E.Width, collision = true, aoe = false, type = "linear"})
-  self.R.IPrediction = IPrediction.Prediction({ name = "XerathR", speed = self.R.Speed, delay = self.R.Delay, range = self.R.Range(), width = self.R.Width, collision = false, aoe = true, type = "circular"})
+    self.Ignite = (GetCastName(myHero, SUMMONER_1):lower():find("summonerdot") and SUMMONER_1 or (GetCastName(myHero, SUMMONER_2):lower():find("summonerdot") and SUMMONER_2 or nil))
+    self.data = function(spell) return myHero:GetSpellData(spell) end
+    self.Q = { Range = 0, minRange = 750, maxRange = 1500, Range2 = 0,           Speed = math.huge, Delay = 0.575, Width = 100, Predict = nil, Damage = function(unit) return myHero:CalcMagicDamage(unit, 40 + 40*self.data(_Q).level + 0.75*myHero.ap) end, Charging = false, LastCastTime = 0}
+    self.W = { Range = self.data(_W).range,                                      Speed = math.huge, Delay = 0.675, Width = 200, Predict = nil, Damage = function(unit) return myHero:CalcMagicDamage(unit, 30 + 30*self.data(_W).level + 0.6*myHero.ap) end}
+    self.E = { Range = self.data(_E).range,                                      Speed = 1200,      Delay = 0.3,   Width = 60,  Predict = nil, Damage = function(unit) return myHero:CalcMagicDamage(unit, 50 + 30*self.data(_E).level + 0.45*myHero.ap) end}
+    self.R = { Range = function() return 2000 + 1200*self.data(_R).level end,    Speed = math.huge, Delay = 0.675, Width = 140, Predict = nil, Damage = function(unit) return myHero:CalcMagicDamage(unit, 135 + 55*self.data(_R).level + 0.433*myHero.ap) end, Activating = false, Count = 3, Delay1 = 0, Delay2 = 0, Delay3 = 0}
+    QT = TargetSelector(self.Q.maxRange, 8, DAMAGE_MAGIC)
+    WT = TargetSelector(self.W.Range, 8, DAMAGE_MAGIC)
+    ET = TargetSelector(self.E.Range, 2, DAMAGE_MAGIC)
+   
+    self.Q.IPrediction = IPrediction.Prediction({ name = "XerathQ", speed = self.Q.Speed, delay = self.Q.Delay, range = self.Q.maxRange, width = self.Q.Width, collision = false, aoe = true, type = "linear"})
+    self.W.IPrediction = IPrediction.Prediction({ name = "XerathW", speed = self.W.Speed, delay = self.W.Delay, range = self.W.Range, width = self.W.Width, collision = false, aoe = true, type = "circular"})
+    self.E.IPrediction = IPrediction.Prediction({ name = "XerathE", speed = self.E.Speed, delay = self.E.Delay, range = self.E.Range, width = self.E.Width, collision = true, aoe = false, type = "linear"})
+    self.R.IPrediction1 = IPrediction.Prediction({ name = "XerathRLv1", speed = self.R.Speed, delay = self.R.Delay, range = 3200, width = self.R.Width, collision = false, aoe = true, type = "circular"})
+    self.R.IPrediction2 = IPrediction.Prediction({ name = "XerathRLv2", speed = self.R.Speed, delay = self.R.Delay, range = 4400, width = self.R.Width, collision = false, aoe = true, type = "circular"})
+    self.R.IPrediction3 = IPrediction.Prediction({ name = "XerathRLv3", speed = self.R.Speed, delay = self.R.Delay, range = 5600, width = self.R.Width, collision = false, aoe = true, type = "circular"})
 end
 
 function NS_Xerath:CreateMenu()
@@ -143,9 +148,9 @@ function NS_Xerath:CreateMenu()
         self.cfg.misc.hc:Slider("E", "E Hit-Chance", 30, 1, 100, 1)
         self.cfg.misc.hc:Slider("R", "R Hit-Chance", 40, 1, 100, 1)
       self.cfg.misc:Menu("delay", "R Casting Delays")
-        self.cfg.misc.delay:Slider("c1", "Delay CastR 1 (ms)", 200, 0, 1000, 1)
-        self.cfg.misc.delay:Slider("c2", "Delay CastR 2 (ms)", 250, 0, 1000, 1)
-        self.cfg.misc.delay:Slider("c3", "Delay CastR 3 (ms)", 250, 0, 1000, 1)
+        self.cfg.misc.delay:Slider("c1", "Delay CastR 1 (ms)", 220, 0, 1500, 1)
+        self.cfg.misc.delay:Slider("c2", "Delay CastR 2 (ms)", 200, 0, 1500, 1)
+        self.cfg.misc.delay:Slider("c3", "Delay CastR 3 (ms)", 250, 0, 1500, 1)
       self.cfg.misc:Menu("Interrupt", "Interrupt With E")
       self.cfg.misc:Menu("GapClose", "Anti-GapClose With E")
 
@@ -264,7 +269,7 @@ function NS_Xerath:GetRCount(unit, spell)
     end
 end
 
-function NS_Xerath:Fight(myHero)
+function NS_Xerath:Tick(myHero)
    if myHero.dead then return end
     self:UpdateValues()
     if self.R.Activating then return end
@@ -334,7 +339,7 @@ function NS_Xerath:LaneClear()
 end
 
 function NS_Xerath:JungleClear()
-    local mob = NEETS_OW == "IOW" and IOW:GetJungleClear() or NEETS_OW == "DAC" and DAC:GetJungleMob()
+    local mob = NEETS_OW == "IOW" and IOW:GetJungleClear() or NEETS_OW == "DAC" and DAC:GetJungleMob() or NEETS_OW == "PW" and PW:GetJungleClear()
      if mob and ValidTarget(mob, self.Q.maxRange, MINION_JUNGLE) then
       if IsReady(_W) and self.cfg.jc.W:Value() and ValidTarget(mob, self.W.Range, MINION_JUNGLE) then
        CastSkillShot(_W, GetCircularAOEPrediction(mob, { delay = self.W.Delay, speed = self.W.Speed, width = self.W.Width, range = self.W.Range }).castPos)
@@ -484,7 +489,7 @@ function NS_Xerath:RPrediction(unit)
       self.R.Predict = GetCircularAOEPrediction(unit, { delay = self.R.Delay, speed = self.R.Speed, radius = self.R.Width/2, range = self.R.Range() })
       hitChance, Position, PredictName = self.R.Predict.hitChance, self.R.Predict.castPos, "OpenPredict"
      elseif NEETS_Predict == "IPrediction" then
-      self.R.Predict = self.R.IPrediction
+      self.R.Predict = self.data(_R).level == 1 and self.R.IPrediction1 or self.data(_R).level == 2 and self.R.IPrediction2 or self.data(_R).level == 3 and self.R.IPrediction3
       hitChance, Position = self.R.Predict:Predict(unit)
       PredictName = "IPrediction"
      elseif NEETS_Predict == "GoSPrediction" then
@@ -576,6 +581,12 @@ function NEETSeries_Mode()
       elseif DAC:Mode() == "LaneClear" then return "LaneClear"
       elseif DAC:Mode() == "LastHit" then return "LastHit"
       end
+    elseif NEETS_OW == "PW" then
+      if PW:Mode() == "Combo" then return "Combo"
+      elseif PW:Mode() == "Harass" then return "Harass"
+      elseif PW:Mode() == "LaneClear" then return "LaneClear"
+      elseif PW:Mode() == "LastHit" then return "LastHit"
+      end
     end
 end
 
@@ -587,6 +598,9 @@ function NEETSeries_BlockOrb(boolean)
       elseif NEETS_OW == "DAC" then
         DAC:MovementEnabled(false) 
         DAC:AttacksEnabled(false)
+      elseif NEETS_OW == "PW" then
+        PW.attacksEnabled = false
+        PW.movementEnabled = false
       end
     elseif boolean == false then
       if NEETS_OW == "IOW" then
@@ -595,6 +609,9 @@ function NEETSeries_BlockOrb(boolean)
       elseif NEETS_OW == "DAC" then
         DAC:MovementEnabled(true) 
         DAC:AttacksEnabled(true)
+      elseif NEETS_OW == "PW" then
+        PW.attacksEnabled = true
+        PW.movementEnabled = true
       end
     end
 end
