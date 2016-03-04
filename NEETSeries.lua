@@ -25,33 +25,33 @@ local NEETSeries = MenuConfig("NEETS", "NEETSeries Version: "..NEETS_Update.Scri
     NEETSeries.info:Info("c1", " - Xerath")
     NEETSeries.info:Info("c2", " - More soon")
 
-   if NEETSeries.predict:Value() == 1 then
-    NEETS_Predict = "OpenPredict"
-   elseif NEETSeries.predict:Value() == 2 then
-    NEETS_Predict = "IPrediction"
-   elseif NEETSeries.predict:Value() == 3 then
-    NEETS_Predict = "GoSPrediction"
-   end
-   if _G.mc_cfg_orb.orb:Value() == 1 then
-    NEETS_OW = "IOW"
-   elseif _G.mc_cfg_orb.orb:Value() == 2 then
-    NEETS_OW = "DAC"
-   elseif _G.PW_Loaded == true or _G.PW_Init == true then
-    NEETS_OW = "PW"
-   end
+    if NEETSeries.predict:Value() == 1 then
+      NEETS_Predict = "OpenPredict"
+    elseif NEETSeries.predict:Value() == 2 then
+      NEETS_Predict = "IPrediction"
+    elseif NEETSeries.predict:Value() == 3 then
+      NEETS_Predict = "GoSPrediction"
+    end
+    if _G.mc_cfg_orb.orb:Value() == 1 then
+      NEETS_OW = "IOW"
+    elseif _G.mc_cfg_orb.orb:Value() == 2 then
+      NEETS_OW = "DAC"
+    elseif _G.PW_Loaded == true or _G.PW_Init == true then
+      NEETS_OW = "PW"
+    end
 
 --[[ -------------------------------------------------- ]]--
 
 class "NS_Xerath"
 function NS_Xerath:__init()
- self:LoadValues()
- self:CreateMenu()
- Callback.Add("Tick", function(myHero) self:Tick(myHero) end)
- Callback.Add("Draw", function() self:Drawings() end)
- Callback.Add("DrawMinimap", function() self:DrawRRange() end)
- Callback.Add("ProcessSpell", function(unit, spell) self:AutoE(unit, spell) self:GetRCount(unit, spell) end)
- Callback.Add("UpdateBuff", function(unit, buff) self:UpdateBuff(unit, buff) end)
- Callback.Add("RemoveBuff", function(unit, buff) self:RemoveBuff(unit, buff) end)
+    self:LoadValues()
+    self:CreateMenu()
+    Callback.Add("Tick", function(myHero) self:Tick(myHero) end)
+    Callback.Add("Draw", function() self:Drawings() end)
+    Callback.Add("DrawMinimap", function() self:DrawRRange() end)
+    Callback.Add("ProcessSpell", function(unit, spell) self:AutoE(unit, spell) self:GetRCount(unit, spell) end)
+    Callback.Add("UpdateBuff", function(unit, buff) self:UpdateBuff(unit, buff) end)
+    Callback.Add("RemoveBuff", function(unit, buff) self:RemoveBuff(unit, buff) end)
 end
 
 function NS_Xerath:LoadValues()
@@ -152,7 +152,7 @@ function NS_Xerath:CreateMenu()
         self.cfg.misc.delay:Slider("c2", "Delay CastR 2 (ms)", 200, 0, 1500, 1)
         self.cfg.misc.delay:Slider("c3", "Delay CastR 3 (ms)", 250, 0, 1500, 1)
       self.cfg.misc:Menu("Interrupt", "Interrupt With E")
-      self.cfg.misc:Menu("GapClose", "Anti-GapClose With E")
+      --self.cfg.misc:Menu("GapClose", "Anti-GapClose With E")
 
     DelayAction(function()
     local str = {[_Q] = "Q", [_W] = "W", [_E] = "E", [_R] = "R"}
@@ -164,7 +164,7 @@ function NS_Xerath:CreateMenu()
       end
      end
     end, 1)
-    AddGapcloseEvent(_E, self.E.Range, false, self.cfg.misc.GapClose)
+    --AddGapcloseEvent(_E, self.E.Range, false, self.cfg.misc.GapClose)
 end
 
 function NS_Xerath:CastR(target)
@@ -211,10 +211,7 @@ end
 
 function NS_Xerath:UpdateValues()
     if IsReady(_Q) then
-     if self.Q.Charging == false then
-      if self.Q.Range ~= self.Q.minRange then self.Q.Range = self.Q.minRange end
-      if self.Q.Range2 ~= self.Q.minRange then self.Q.Range2 = self.Q.minRange end
-     else
+     if self.Q.Charging == true
       self.Q.Range = math.min(self.Q.minRange + (os.clock() - self.Q.LastCastTime)*500, self.Q.maxRange)
       self.Q.Range2 = math.min(self.Q.minRange-15 + (os.clock() - self.Q.LastCastTime)*500, self.Q.maxRange)
      end
@@ -560,6 +557,8 @@ function NS_Xerath:RemoveBuff(unit, buff)
     if unit == myHero and unit.dead == false then
      if buff.Name == "XerathArcanopulseChargeUp" then
       self.Q.Charging = false
+      self.Q.Range = self.Q.minRange
+      self.Q.Range2 = self.Q.minRange
      elseif buff.Name == "XerathLocusOfPower2" then
       self.R.Activating = false
       self.R.Count = 3
