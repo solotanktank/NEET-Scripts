@@ -1,10 +1,10 @@
---[[ NEET Series Version 0.03 ]]--
+--[[ NEET Series Version 0.031 ]]--
 require('Inspired')
 require('IPrediction')
 require('OpenPredict')
 
 local NEETS_Update, NEETS_Predict, NEETS_OW = {}, "", ""
-    NEETS_Update.ScriptVersion = 0.03
+    NEETS_Update.ScriptVersion = 0.031
     NEETS_Update.UseHttps = true
     NEETS_Update.Host = "raw.githubusercontent.com"
     NEETS_Update.VersionPath = "/VTNEETS/NEET-Scripts/master/NEETSeries.version"
@@ -26,18 +26,18 @@ local NEETSeries = MenuConfig("NEETS", "NEETSeries Version: "..NEETS_Update.Scri
     NEETSeries.info:Info("c2", " - More soon")
 
     if NEETSeries.predict:Value() == 1 then
-      NEETS_Predict = "OpenPredict"
+        NEETS_Predict = "OpenPredict"
     elseif NEETSeries.predict:Value() == 2 then
-      NEETS_Predict = "IPrediction"
+        NEETS_Predict = "IPrediction"
     elseif NEETSeries.predict:Value() == 3 then
-      NEETS_Predict = "GoSPrediction"
+        NEETS_Predict = "GoSPrediction"
     end
     if _G.mc_cfg_orb.orb:Value() == 1 then
-      NEETS_OW = "IOW"
+        NEETS_OW = "IOW"
     elseif _G.mc_cfg_orb.orb:Value() == 2 then
-      NEETS_OW = "DAC"
+        NEETS_OW = "DAC"
     elseif _G.PW_Loaded == true or _G.PW_Init == true then
-      NEETS_OW = "PW"
+        NEETS_OW = "PW"
     end
 
 --[[ -------------------------------------------------- ]]--
@@ -68,9 +68,11 @@ function NS_Xerath:LoadValues()
     self.Q.IPrediction = IPrediction.Prediction({ name = "XerathQ", speed = self.Q.Speed, delay = self.Q.Delay, range = self.Q.maxRange, width = self.Q.Width, collision = false, aoe = true, type = "linear"})
     self.W.IPrediction = IPrediction.Prediction({ name = "XerathW", speed = self.W.Speed, delay = self.W.Delay, range = self.W.Range, width = self.W.Width, collision = false, aoe = true, type = "circular"})
     self.E.IPrediction = IPrediction.Prediction({ name = "XerathE", speed = self.E.Speed, delay = self.E.Delay, range = self.E.Range, width = self.E.Width, collision = true, aoe = false, type = "linear"})
-    self.R.IPrediction1 = IPrediction.Prediction({ name = "XerathRLv1", speed = self.R.Speed, delay = self.R.Delay, range = 3200, width = self.R.Width, collision = false, aoe = true, type = "circular"})
-    self.R.IPrediction2 = IPrediction.Prediction({ name = "XerathRLv2", speed = self.R.Speed, delay = self.R.Delay, range = 4400, width = self.R.Width, collision = false, aoe = true, type = "circular"})
-    self.R.IPrediction3 = IPrediction.Prediction({ name = "XerathRLv3", speed = self.R.Speed, delay = self.R.Delay, range = 5600, width = self.R.Width, collision = false, aoe = true, type = "circular"})
+    self.R.IPrediction = {
+    [1] = IPrediction.Prediction({ name = "XerathRLv1", speed = self.R.Speed, delay = self.R.Delay, range = 3200, width = self.R.Width, collision = false, aoe = true, type = "circular"}),
+    [2] = IPrediction.Prediction({ name = "XerathRLv2", speed = self.R.Speed, delay = self.R.Delay, range = 4400, width = self.R.Width, collision = false, aoe = true, type = "circular"}),
+    [3] = IPrediction.Prediction({ name = "XerathRLv3", speed = self.R.Speed, delay = self.R.Delay, range = 5600, width = self.R.Width, collision = false, aoe = true, type = "circular"})
+    }
 end
 
 function NS_Xerath:CreateMenu()
@@ -211,7 +213,7 @@ end
 
 function NS_Xerath:UpdateValues()
     if IsReady(_Q) then
-     if self.Q.Charging == true
+     if self.Q.Charging == true then
       self.Q.Range = math.min(self.Q.minRange + (os.clock() - self.Q.LastCastTime)*500, self.Q.maxRange)
       self.Q.Range2 = math.min(self.Q.minRange-15 + (os.clock() - self.Q.LastCastTime)*500, self.Q.maxRange)
      end
@@ -486,7 +488,7 @@ function NS_Xerath:RPrediction(unit)
       self.R.Predict = GetCircularAOEPrediction(unit, { delay = self.R.Delay, speed = self.R.Speed, radius = self.R.Width/2, range = self.R.Range() })
       hitChance, Position, PredictName = self.R.Predict.hitChance, self.R.Predict.castPos, "OpenPredict"
      elseif NEETS_Predict == "IPrediction" then
-      self.R.Predict = self.data(_R).level == 1 and self.R.IPrediction1 or self.data(_R).level == 2 and self.R.IPrediction2 or self.data(_R).level == 3 and self.R.IPrediction3
+      self.R.Predict = self.R.IPrediction[self.data(_R).level]
       hitChance, Position = self.R.Predict:Predict(unit)
       PredictName = "IPrediction"
      elseif NEETS_Predict == "GoSPrediction" then
@@ -626,8 +628,8 @@ function NEETSeries_Hello()
 end
 
 function NEETS_PrintPredict()
-local Prediction = NEETSeries.predict:Value() == 1 and "OpenPredict" or NEETSeries.predict:Value() == 2 and "IPrediction" or NEETSeries.predict:Value() == 3 and "GoSPrediction"
-    NEETSeries_Print("Prediciton has been changed to: "..Prediction..". Please press F6 x2 to Reload script.")
+   local Prediction = NEETSeries.predict:Value() == 1 and "OpenPredict" or NEETSeries.predict:Value() == 2 and "IPrediction" or NEETSeries.predict:Value() == 3 and "GoSPrediction"
+    NEETSeries_Print("Prediciton has been changed to: "..Prediction..". x2 F6 to Reload script.")
 end
 
 if myHero.charName == "Xerath" then
