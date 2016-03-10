@@ -1,10 +1,10 @@
---[[ NEET Series Version 0.031 ]]--
+--[[ NEET Series Version 0.032 ]]--
 require('Inspired')
 require('IPrediction')
 require('OpenPredict')
 
 local NEETS_Update, NEETS_Predict, NEETS_OW = {}, "", ""
-    NEETS_Update.ScriptVersion = 0.031
+    NEETS_Update.ScriptVersion = 0.032
     NEETS_Update.UseHttps = true
     NEETS_Update.Host = "raw.githubusercontent.com"
     NEETS_Update.VersionPath = "/VTNEETS/NEET-Scripts/master/NEETSeries.version"
@@ -258,7 +258,7 @@ end
 
 function NS_Xerath:GetRCount(unit, spell)
    if not self.R.Activating then return end
-    if unit == myHero and spell.name == "xerathlocuspulse" then
+    if unit == myHero and spell.name:lower() == "xerathlocuspulse" then
     self.R.Count = self.R.Count - 1
      if self.R.Count == 2 then
      self.R.Delay2 = os.clock()
@@ -545,10 +545,10 @@ end
 
 function NS_Xerath:UpdateBuff(unit, buff)
     if unit == myHero and unit.dead == false then
-     if buff.Name == "XerathArcanopulseChargeUp" then
+     if buff.Name:lower() == "xeratharcanopulsechargeup" then
       self.Q.LastCastTime = os.clock()
       self.Q.Charging = true
-     elseif buff.Name == "XerathLocusOfPower2" then
+     elseif buff.Name:lower() == "xerathlocusofpower2" then
       self.R.Delay1 = os.clock()
       self.R.Activating = true
      end
@@ -557,11 +557,11 @@ end
 
 function NS_Xerath:RemoveBuff(unit, buff)
     if unit == myHero and unit.dead == false then
-     if buff.Name == "XerathArcanopulseChargeUp" then
+     if buff.Name:lower() == "xeratharcanopulsechargeup" then
       self.Q.Charging = false
       self.Q.Range = self.Q.minRange
       self.Q.Range2 = self.Q.minRange
-     elseif buff.Name == "XerathLocusOfPower2" then
+     elseif buff.Name:lower() == "xerathlocusofpower2" then
       self.R.Activating = false
       self.R.Count = 3
       NEETSeries_BlockOrb(false)
