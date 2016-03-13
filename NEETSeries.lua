@@ -1,4 +1,4 @@
---[[ NEET Series Version 0.04 ]]--
+--[[ NEET Series Version 0.041 ]]--
 -- > Added Kog'Maw
 -- > Now request MixLib.
 ---------------------------------------
@@ -10,11 +10,9 @@ else
  print("MixLib not found. Please wait for download.")
  DownloadFileAsync("https://raw.githubusercontent.com/VTNEETS/NEET-Scripts/master/MixLib.lua", COMMON_PATH.."MixLib.lua", function() PrintChat("Update Complete, please 2x F6!") end) return
 end
- 
- 
 
 local NEETS_Update = {}
-    NEETS_Update.ScriptVersion = 0.04
+    NEETS_Update.ScriptVersion = 0.041
     NEETS_Update.UseHttps = true
     NEETS_Update.Host = "raw.githubusercontent.com"
     NEETS_Update.VersionPath = "/VTNEETS/NEET-Scripts/master/NEETSeries.version"
@@ -242,13 +240,15 @@ function NS_Xerath:Tick(myHero)
        if IsReady(_W) and self.cfg.cb.W:Value() and WTarget then self:CastW(WTarget) end
        if IsReady(_Q) and self.cfg.cb.Q:Value() and QTarget then self:CastQ(QTarget) end
      end
+    end
 
-    elseif Mix_Mode() == "Harass" and self.cfg.hr.Enable:Value() <= GetPercentMP(myHero) then
+    if Mix_Mode() == "Harass" and self.cfg.hr.Enable:Value() <= GetPercentMP(myHero) then
        if IsReady(_E) and self.cfg.hr.E:Value() and ETarget then self:CastE(ETarget) end
        if IsReady(_W) and self.cfg.hr.W:Value() and WTarget then self:CastW(WTarget) end
        if IsReady(_Q) and self.cfg.hr.Q:Value() and QTarget then self:CastQ(QTarget) end
+    end
 
-    elseif Mix_Mode() == "LaneClear" then
+    if Mix_Mode() == "LaneClear" then
      if self.cfg.lc.Enable:Value() <= GetPercentMP(myHero) then self:LaneClear() end
 	 self:JungleClear()
     end
@@ -517,7 +517,8 @@ function NS_KogMaw:CreateMenu()
     self.cfg:Menu("lc", "Lane Clear")
         self.cfg.lc:Slider("E", "Use E if hit Minions >=", 3, 1, 10, 1)
         self.cfg.lc:Slider("R", "Use R if hit Minions >=", 3, 1, 10, 1)
-        self.cfg.lc:Slider("Enable", "Enable if %MP >=", 15, 1, 100, 1)
+        self.cfg.lc:Slider("Enable1", "Enable if %MP >=", 15, 1, 100, 1)
+        self.cfg.lc:Boolean("Enable2", "Enable R if don't have enemy in 1200 range", true)
 
     --[[ Jungle Clear Menu ]]--
     self.cfg:Menu("jc", "Jungle Clear")
@@ -565,7 +566,7 @@ function NS_KogMaw:CastE(target)
 end
 
 function NS_KogMaw:CastW()
-   local target = _G.Mix_OW == "IOW" and IOW:GetTarget() or _G.Mix_OW == "DAC" and DAC:GetTarget() or _G.Mix_OW == "PW" and PW:GetTarget()
+   local target = GetCurrentTarget()
     if self.UseW and target and ((ValidTarget(target, 560+GetHitBox(myHero)+30*self.data(_W).level) and IsReady(_E)) or (ValidTarget(target, 535+GetHitBox(myHero)+25*self.data(_W).level) and not IsReady(_E))) then CastSpell(_W) end
 end
 
@@ -580,22 +581,24 @@ end
 function NS_KogMaw:Tick(myHero)
    if myHero.dead then return end
     if EnemiesAround(myHero.pos, 560+GetHitBox(myHero)+30*self.data(_W).level) == 0 then self.CanCast = true end
-    local QTarget = IsReady(_Q) and QT:GetTarget() or nil
-    local ETarget = IsReady(_E) and ET:GetTarget() or nil
-    local RTarget = IsReady(_R) and self:GetRTarget() or nil
+    if IsReady(_Q) then QTarget = QT:GetTarget() end
+    if IsReady(_E) then ETarget = ET:GetTarget() end
+    if IsReady(_R) then RTarget = self:GetRTarget() end
     if Mix_Mode() == "Combo" then
        if IsReady(_E) and self.cfg.cb.E:Value() and ETarget then self:CastE(ETarget) end
        if IsReady(_W) and self.cfg.cb.W:Value() then self:CastW() end
        if IsReady(_Q) and self.cfg.cb.Q:Value() and QTarget then self:CastQ(QTarget) end
        if IsReady(_R) and self.cfg.cb.Q:Value() and RTarget then self:CastR(RTarget) end
+    end
 
-    elseif Mix_Mode() == "Harass" and self.cfg.hr.Enable:Value() <= GetPercentMP(myHero) then
+    if Mix_Mode() == "Harass" and self.cfg.hr.Enable:Value() <= GetPercentMP(myHero) then
        if IsReady(_E) and self.cfg.hr.E:Value() and ETarget then self:CastE(ETarget) end
        if IsReady(_Q) and self.cfg.hr.Q:Value() and QTarget then self:CastQ(QTarget) end
        if IsReady(_R) and self.cfg.cb.Q:Value() and RTarget then self:CastR(RTarget) end
+    end
 
-    elseif Mix_Mode() == "LaneClear" then
-     if self.cfg.lc.Enable:Value() <= GetPercentMP(myHero) then self:LaneClear() end
+    if Mix_Mode() == "LaneClear" then
+     if self.cfg.lc.Enable1:Value() <= GetPercentMP(myHero) then self:LaneClear() end
 	 self:JungleClear()
     end
 
@@ -625,6 +628,7 @@ end
 function NS_KogMaw:LaneClear()
     if IsReady(_R) then
     if self.cfg.misc.rc.R2:Value() <= self.R.Count then return end
+    if self.cfg.lc.Enable2:Value() and EnemiesAround(myHero.pos, 1200) >= 1 then return end
     if self.cfg.misc.rc.R1:Value() and myHero.mana - 50*self.R.Count < 110+10*self.data(_E).level then return end
     local RPos, RHit = GetFarmPosition2(self.R.Range(), self.R.Width)
        if RHit >= self.cfg.lc.R:Value() then CastSkillShot(_R, RPos) end
