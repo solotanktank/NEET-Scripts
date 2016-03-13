@@ -4,7 +4,7 @@
 ---------------------------------------
  require('Inspired')
  require('OpenPredict')
-if FileExist(COMMON_PATH.."/MixLib.lua") then
+if FileExist(COMMON_PATH.."MixLib.lua") then
  require('MixLib')
 else
  print("MixLib not found. Please wait for download.")
