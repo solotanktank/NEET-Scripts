@@ -1,4 +1,7 @@
---[[ NEET Series Version 0.032 ]]--
+--[[ NEET Series Version 0.04 ]]--
+-- > Added Kog'Maw
+-- > Now request MixLib.
+---------------------------------------
  require('Inspired')
  require('OpenPredict')
 if FileExist(COMMON_PATH.."/MixLib.lua") then
