@@ -30,7 +30,7 @@ function Mix_SpellPredict1(unit, spellData, IPred)
       hitChance, Position = Pred:Predict(unit)
       PredictName = "IPrediction"
      elseif Mix_Predict == "GoSPrediction" then
-      Pred = GetPredictionForPlayer(myHero.pos, unit, unit.ms, spellData.speed, spellData.delay*1000, spellData.range, spellData.width, false, true)
+      Pred = GetPredictionForPlayer(myHero.pos, unit, unit.ms, spellData.speed, spellData.delay*1000, spellData.range, spellData.width, false, spellData.aoe)
       hitChance, Position, PredictName = Pred.HitChance, Pred.PredPos, "GoSPrediction"
      end
     end
@@ -57,7 +57,7 @@ function Mix_SpellPredict2(unit, spellData, IPred)
       hitChance, Position = Pred:Predict(unit)
       CanCast, PredictName =  true, "IPrediction"
      elseif Mix_Predict == "GoSPrediction" then
-      Pred = GetPredictionForPlayer(myHero.pos, unit, unit.ms, spellData.speed, spellData.delay*1000, spellData.range, spellData.width, true, false)
+      Pred = GetPredictionForPlayer(myHero.pos, unit, unit.ms, spellData.speed, spellData.delay*1000, spellData.range, spellData.width, true, spellData.aoe)
       hitChance, Position, CanCast, PredictName = Pred.HitChance, Pred.PredPos, true, "GoSPrediction"
      end
     end
@@ -88,14 +88,14 @@ end
 
 function Mix_GetHealthPrediction(unit, time, hpname)
     if name == "GoS" then
-        return GetDamagePrediction(unit, time)
+        return unit.health - GetDamagePrediction(unit, time)
     elseif name == "OP" then
         return GetHealthPrediction(unit, time)
     elseif name == "OW" then
       if Mix_OW == "IOW" then
         return IOW:PredictHealth(unit, time)
       elseif Mix_OW == "DAC" then
-        return DAC:PredictHealth(unit, time)
+        return unit.health - GetDamagePrediction(unit, time)
       elseif Mix_OW == "PW" then
         return PW:PredictHealth(unit, time)
       end
@@ -190,7 +190,6 @@ function Mix_Print(text)
 end
 
 function Mix_Hello()
-    Mix_Print("MixLib(Library collection) "..NewVersion.." Loaded")
 	PrintChat(string.format("<font color=\"#4169E1\"><b>[Mix Lib]:</b></font><font color=\"#FFFFFF\"> Current Prediction: %s | Orbwalker: %s</font>", Mix_Predict, Mix_OW))
 end
 
@@ -207,7 +206,7 @@ local MixLib_Update = {}
     MixLib_Update.ScriptPath = "/VTNEETS/NEET-Scripts/master/MixLib.lua"
     MixLib_Update.SavePath = COMMON_PATH.."/MixLib.lua"
     MixLib_Update.CallbackUpdate = function(NewVersion) Mix_Print("Updated to "..NewVersion..". Please F6 x2 to reload.") end
-    MixLib_Update.CallbackNoUpdate = function(NewVersion) Mix_Hello() end
+    MixLib_Update.CallbackNoUpdate = function(NewVersion) Mix_Print("MixLib (Library collection) Version "..NewVersion.." Loaded") Mix_Hello() end
     MixLib_Update.CallbackNewVersion = function(NewVersion) Mix_Print("New Version found ("..NewVersion.."). Please wait...") end
     MixLib_Update.CallbackError = function() Mix_Print("Error when checking update. Please try again.") end
     Callback.Add("Load", function() AutoUpdater(MixLib_Update.ScriptVersion, MixLib_Update.UseHttps, MixLib_Update.Host, MixLib_Update.VersionPath, MixLib_Update.ScriptPath, MixLib_Update.SavePath, MixLib_Update.CallbackUpdate, MixLib_Update.CallbackNoUpdate, MixLib_Update.CallbackNewVersion, MixLib_Update.CallbackError) end)
