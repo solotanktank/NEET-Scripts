@@ -535,7 +535,7 @@ function NS_KogMaw:CreateMenu()
 
     --[[ Misc Menu ]]--
     self.cfg:Menu("misc", "Misc Mode")
-      self.cfg.misc:Menu("rc", "Request To Cast R")
+      self.cfg.misc:Menu("rc", "Request Casting R")
         self.cfg.misc.rc:Boolean("R1", "Cast R but save mana for use W", true)
         self.cfg.misc.rc:Slider("R2", "Cast R if Stacks < x", 5, 1, 10, 1)
       self.cfg.misc:Menu("hc", "Spell HitChance")
@@ -549,7 +549,7 @@ end
 function NS_KogMaw:CastR(target)
    if not ValidTarget(target, self.R.Range()) then return end
    if self.cfg.misc.rc.R2:Value() <= self.R.Count then return end
-   if self.cfg.misc.rc.R1:Value() and myHero.mana - 50*self.R.Count < 40 then return end
+   if self.cfg.misc.rc.R1:Value() and myHero.mana - 50*self.R.Count < 110+10*self.data(_E).level then return end
     local hc, Pos, Name = Mix_SpellPredict3(target, _R, { speed = self.R.Speed, delay = self.R.Delay, range = self.R.Range(), width = self.R.Width, type = "circular" }, self.R.IPrediction)
     if Name == "Dashing" or (Name == "OpenPredict" and hc >= self.cfg.misc.hc.R:Value()/100) or (Name == "IPrediction" and hc > 2) or (Name == "GoSPrediction" and hc >= 1) then
       if self.CanCast then CastSkillShot(_R, Pos) end
@@ -625,7 +625,7 @@ end
 function NS_KogMaw:LaneClear()
     if IsReady(_R) then
     if self.cfg.misc.rc.R2:Value() <= self.R.Count then return end
-    if self.cfg.misc.rc.R1:Value() and myHero.mana - 50*self.R.Count < 40 then return end
+    if self.cfg.misc.rc.R1:Value() and myHero.mana - 50*self.R.Count < 110+10*self.data(_E).level then return end
     local RPos, RHit = GetFarmPosition2(self.R.Range(), self.R.Width)
        if RHit >= self.cfg.lc.R:Value() then CastSkillShot(_R, RPos) end
     end
@@ -645,7 +645,7 @@ function NS_KogMaw:JungleClear()
     end
     if mob and IsReady(_R) and self.cfg.jc.Q:Value() and ValidTarget(mob, self.R.Range(), MINION_JUNGLE) then
     if self.cfg.misc.rc.R2:Value() <= self.R.Count then return end
-    if self.cfg.misc.rc.R1:Value() and myHero.mana - 50*self.R.Count < 40 then return end
+    if self.cfg.misc.rc.R1:Value() and myHero.mana - 50*self.R.Count < 110+10*self.data(_E).level then return end
       CastSkillShot(_R, GetCircularAOEPrediction(mob, { delay = self.R.Delay, speed = self.R.Speed, width = self.R.Width, range = self.R.Range() }).castPos)
     end
 end
